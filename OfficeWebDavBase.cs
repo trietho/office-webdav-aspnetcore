@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace OfficeWebDav
 {
     [OfficeWebDavHeadersFilter]
-    public abstract class OfficeWebDavBaseController : Controller
+    public abstract class OfficeWebDavBaseController: Controller
     {
+
         [HttpGet]
         [Route("{filename}")]
         [Route("{sessionid}/{filename}")]
@@ -20,7 +21,7 @@ namespace OfficeWebDav
         [AcceptVerbs("LOCK")]
         [Route("{fileName}")]
         [Route("{sessionid}/{filename}")]
-        public virtual IActionResult Lock(string sessionid = "", string filename = "")
+        public virtual Task<IActionResult> Lock(string sessionid = "", string filename = "")
         {
             return LockFile(Guid.NewGuid());
         }
@@ -30,21 +31,21 @@ namespace OfficeWebDav
         [Route("")]
         [Route("{fileName}")]
         [Route("{sessionid}/{filename}")]
-        public virtual IActionResult Options()
+        public virtual Task<IActionResult> Options()
         {
-            return Ok();
+            return Task.FromResult(Ok() as IActionResult);
         }
 
         [AcceptVerbs("UNLOCK")]
         [Route("{fileName}")]
         [Route("{sessionid}/{filename}")]
-        public virtual IActionResult Unlock(string sessionid = "", string filename = "")
+        public virtual Task<IActionResult> Unlock(string sessionid = "", string filename = "")
         {
-            return StatusCode(200);
+            return Task.FromResult(StatusCode(200) as IActionResult);
         }
 
 
-        protected IActionResult LockFile(Guid lockToken, string author = "Anonymous", int timeout = 3600)
+        protected Task<IActionResult> LockFile(Guid lockToken, string author = "Anonymous", int timeout = 3600)
         {
             var responseXML = @"
                 <?xml version=""1.0"" encoding=""utf-8""?>
@@ -78,7 +79,7 @@ namespace OfficeWebDav
             var responseContent = string.Format(responseXML, lockToken.ToString(), fileUrl, author, timeout);
             Response.ContentType = "application/xml; charset=utf-8";
 
-            return Content(responseContent);
+            return Task.FromResult(Content(responseContent) as IActionResult);
         }
 
         protected string getRequestUrl()
