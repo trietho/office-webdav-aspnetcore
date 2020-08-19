@@ -36,12 +36,23 @@ namespace MiniDav.Controllers
                 return NotFound();
             }
 
+            FileInfo fi = new FileInfo(filePath);
+
+            var etag = fi.LastWriteTime.ToBinary().ToString();
+            if (Request.Headers[HeaderNames.IfNoneMatch].ToString() == etag)
+            {
+                return StatusCode(304);
+            }
+
+            Response.Headers.Remove(HeaderNames.ETag);
+            Response.Headers.Add(HeaderNames.ETag, etag);
             //TODO: send the content-type properly for office documents
             return PhysicalFile(
                 Path.Combine(_env.ContentRootPath, "data/" + filename),
                 //"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 );
+
 
         }
 

@@ -23,6 +23,10 @@ namespace OfficeWebDav
         [Route("{sessionid}/{filename}")]
         public virtual Task<IActionResult> Lock(string sessionid = "", string filename = "")
         {
+            var lockToken = Guid.NewGuid();
+            Response.ContentType = "application/xml; charset=utf-8";
+            Response.Headers.Add("Lock-Token", lockToken.ToString());
+            
             return LockFile(Guid.NewGuid());
         }
 
@@ -77,7 +81,6 @@ namespace OfficeWebDav
             var fileUrl = getRequestUrl();
 
             var responseContent = string.Format(responseXML, lockToken.ToString(), fileUrl, author, timeout);
-            Response.ContentType = "application/xml; charset=utf-8";
 
             return Task.FromResult(Content(responseContent) as IActionResult);
         }
